@@ -1,5 +1,4 @@
-Here's a comprehensive README.md for your project:
-markdown# ⚖️ VoiceLegal AI
+⚖️ VoiceLegal AI
 
 > AI-Powered Legal Document Analysis with Voice Interaction
 
