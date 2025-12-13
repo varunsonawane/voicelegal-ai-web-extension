@@ -100,7 +100,7 @@ const VoiceAssistant = ({ documentContext, filename }) => {
               <button
                 onClick={startConversation}
                 disabled={conversation.status === 'connecting'}
-                className="bg-primary hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
               >
                 {conversation.status === 'connecting' ? 'Connecting...' : 'Start Voice Chat'}
               </button>
