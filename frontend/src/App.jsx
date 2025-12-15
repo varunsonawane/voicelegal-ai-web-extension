@@ -1,10 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DocumentUpload from './components/DocumentUpload';
 import DocumentAnalysis from './components/DocumentAnalysis';
 import VoiceAssistant from './components/VoiceAssistant';
 
 function App() {
   const [documentData, setDocumentData] = useState(null);
+  const [loadingExtensionData, setLoadingExtensionData] = useState(true);
+
+  useEffect(() => {
+  const checkExtensionData = async () => {
+    console.log('Checking for extension data...');
+    
+    try {
+      // Check URL for analysis_id parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const analysisId = urlParams.get('analysis_id');
+      
+      console.log('Analysis ID from URL:', analysisId);
+      
+      if (analysisId) {
+        console.log('Fetching analysis from backend...');
+        
+        const response = await fetch(`http://localhost:8000/api/get-temp-analysis/${analysisId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch analysis');
+        }
+        
+        const result = await response.json();
+        console.log('Received analysis data:', result);
+        
+        if (result.success && result.data) {
+          console.log('✓ Loading extension data into dashboard');
+          setDocumentData({
+            analysis: result.data.analysis,
+            url: result.data.url,
+            title: result.data.title,
+            filename: result.data.title || 'Web Page Analysis'
+          });
+          
+          // Clean up URL (remove analysis_id parameter)
+          window.history.replaceState({}, document.title, window.location.pathname);
+          console.log('✓ Extension data loaded and URL cleaned');
+        }
+      } else {
+        console.log('No analysis_id in URL');
+      }
+    } catch (error) {
+      console.error('Error loading extension data:', error);
+    } finally {
+      setLoadingExtensionData(false);
+    }
+  };
+
+  checkExtensionData();
+}, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -43,10 +93,34 @@ function App() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        {!documentData ? (
+        {loadingExtensionData && !documentData ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+            <p className="mt-4 text-gray-600">Checking for extension data...</p>
+          </div>
+        ) : !documentData ? (
           <DocumentUpload onDocumentAnalyzed={setDocumentData} />
         ) : (
           <div className="space-y-8">
+            {/* Show source info if from extension */}
+            {documentData.url && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 animate-fadeIn">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-blue-900">
+                      ✓ Analyzed from browser extension
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1 break-all">
+                      {documentData.url}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <DocumentAnalysis
               analysis={documentData.analysis}
               filename={documentData.filename}

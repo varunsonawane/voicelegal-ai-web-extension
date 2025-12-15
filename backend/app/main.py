@@ -4,23 +4,35 @@ import PyPDF2
 import io
 from datetime import datetime
 import uuid
+import time
 import os
 from typing import Optional
 
-app = FastAPI(title="VoiceLegal AI Backend")
+
+app = FastAPI(title="VoiceLegal AI API")
+
+# CORS configuration
+origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:4173",
+    "https://*.vercel.app",
+    "chrome-extension://*",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# In-memory storage for documents
+# In-memory storage
 documents_db = {}
-# Store most recent document per session
 session_documents = {}
+temp_storage = {}
+document_storage = {}  # For voice assistant context
 
 def extract_text_from_pdf(pdf_file):
     """Extract text from PDF file"""
@@ -111,6 +123,47 @@ This document contains approximately {word_count} words of legal text with sever
 - Severability clauses that keep other terms valid if one is invalidated
 """
 
+# Health check
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "voicelegal-backend", "timestamp": time.time()}
+
+# PDF Upload and Analysis (for dashboard)
+@app.post("/api/analyze")
+async def analyze_pdf(file: UploadFile = File(...)):
+    """Analyze uploaded PDF document"""
+    try:
+        if not file.filename.endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+        
+        contents = await file.read()
+        
+        if len(contents) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+        
+        # Extract text from PDF
+        text = extract_text_from_pdf(contents)
+        print(f"Extracted {len(text)} characters from PDF: {file.filename}")
+        
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="Could not extract text from PDF")
+        
+        # Analyze with Gemini
+        analysis = analyze_document_with_gemini(text, file.filename)
+        
+        return {
+            "success": True,
+            "analysis": analysis,
+            "filename": file.filename
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error analyzing PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Legacy upload endpoint (keeping for backward compatibility)
 @app.post("/api/upload-document")
 async def upload_document(file: UploadFile = File(...)):
     """Upload and analyze a legal document"""
@@ -143,7 +196,6 @@ async def upload_document(file: UploadFile = File(...)):
         }
         
         documents_db[doc_id] = doc_data
-        # Also store as "latest" for easy retrieval
         session_documents["latest"] = doc_data
         
         print(f"Document {doc_id} processed successfully")
@@ -170,6 +222,105 @@ async def get_document(doc_id: str):
         raise HTTPException(status_code=404, detail="Document not found")
     return documents_db[doc_id]
 
+# Text analysis (from extension)
+@app.post("/api/analyze-text")
+async def analyze_text(request: dict):
+    """Analyze text content from browser extension"""
+    try:
+        text = request.get("text", "")
+        url = request.get("url", "")
+        title = request.get("title", "")
+        
+        if not text:
+            raise HTTPException(status_code=400, detail="No text provided")
+        
+        # Analyze with Gemini
+        analysis = analyze_document_with_gemini(text, title)
+        
+        return {
+            "success": True,
+            "analysis": analysis,
+            "url": url,
+            "title": title
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Extension-to-Dashboard transfer endpoints
+@app.post("/api/store-temp-analysis")
+async def store_temp_analysis(data: dict):
+    """Store analysis temporarily for extension-to-dashboard transfer"""
+    analysis_id = str(uuid.uuid4())
+    
+    temp_storage[analysis_id] = {
+        "data": data,
+        "timestamp": time.time()
+    }
+    
+    # Clean up old entries (older than 5 minutes)
+    current_time = time.time()
+    expired_ids = [
+        key for key, value in temp_storage.items()
+        if current_time - value["timestamp"] > 300
+    ]
+    for expired_id in expired_ids:
+        del temp_storage[expired_id]
+    
+    return {"success": True, "analysis_id": analysis_id}
+
+@app.get("/api/get-temp-analysis/{analysis_id}")
+async def get_temp_analysis(analysis_id: str):
+    """Retrieve temporarily stored analysis"""
+    if analysis_id not in temp_storage:
+        raise HTTPException(status_code=404, detail="Analysis not found or expired")
+    
+    data = temp_storage[analysis_id]["data"]
+    del temp_storage[analysis_id]
+    
+    return {"success": True, "data": data}
+
+# Voice Assistant endpoints
+@app.post("/api/store-document-context")
+async def store_document_context(data: dict):
+    """Store document context for voice assistant"""
+    conversation_id = str(uuid.uuid4())
+    
+    document_storage[conversation_id] = {
+        "analysis": data.get("analysis"),
+        "filename": data.get("filename"),
+        "timestamp": time.time()
+    }
+    
+    # Clean up old entries (older than 30 minutes)
+    current_time = time.time()
+    expired_ids = [
+        key for key, value in document_storage.items()
+        if current_time - value["timestamp"] > 1800
+    ]
+    for expired_id in expired_ids:
+        del document_storage[expired_id]
+    
+    return {"success": True, "conversation_id": conversation_id}
+
+@app.post("/api/webhook/get-document-analysis")
+async def webhook_get_document_analysis(data: dict):
+    """Webhook for ElevenLabs to retrieve document analysis"""
+    conversation_id = data.get("conversation_id")
+    
+    if conversation_id and conversation_id in document_storage:
+        doc_data = document_storage[conversation_id]
+        return {
+            "success": True,
+            "analysis": doc_data["analysis"],
+            "filename": doc_data["filename"]
+        }
+    
+    return {
+        "success": False,
+        "error": "Document not found"
+    }
+
+# Legacy agent endpoint (keeping for backward compatibility)
 @app.post("/api/agent/get-document-analysis")
 async def get_document_for_agent(
     doc_id: Optional[str] = None,
@@ -198,7 +349,6 @@ async def get_document_for_agent(
                 }
             doc_data = documents_db[doc_id]
         
-        # Return analysis in a format the agent can understand
         return {
             "success": True,
             "filename": doc_data["filename"],
@@ -212,7 +362,3 @@ async def get_document_for_agent(
             "success": False,
             "message": f"Error retrieving document: {str(e)}"
         }
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "voicelegal-backend"}

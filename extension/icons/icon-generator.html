@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>VoiceLegal AI Icon Generator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+    
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .icon-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .icon-container h3 {
+      margin-top: 10px;
+      color: #333;
+    }
+    
+    .icon-container p {
+      color: #666;
+      font-size: 12px;
+    }
+    
+    canvas {
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    button:hover {
+      background: #5568d3;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center; color: #667eea;">VoiceLegal AI Icons</h1>
+  
+  <div class="icon-grid">
+    <div class="icon-container">
+      <canvas id="icon16" width="16" height="16"></canvas>
+      <h3>16x16</h3>
+      <p>Toolbar small</p>
+      <button onclick="downloadIcon('icon16', 16)">Download</button>
+    </div>
+    
+    <div class="icon-container">
+      <canvas id="icon32" width="32" height="32"></canvas>
+      <h3>32x32</h3>
+      <p>Toolbar retina</p>
+      <button onclick="downloadIcon('icon32', 32)">Download</button>
+    </div>
+    
+    <div class="icon-container">
+      <canvas id="icon48" width="48" height="48"></canvas>
+      <h3>48x48</h3>
+      <p>Extension management</p>
+      <button onclick="downloadIcon('icon48', 48)">Download</button>
+    </div>
+    
+    <div class="icon-container">
+      <canvas id="icon128" width="128" height="128"></canvas>
+      <h3>128x128</h3>
+      <p>Chrome Web Store</p>
+      <button onclick="downloadIcon('icon128', 128)">Download</button>
+    </div>
+  </div>
+
+  <script>
+    function drawIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+      
+      // Gradient background
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      
+      // Draw scales of justice
+      ctx.strokeStyle = 'white';
+      ctx.fillStyle = 'white';
+      ctx.lineWidth = Math.max(1, size / 32);
+      
+      // Scale sizes based on canvas size
+      const scale = size / 128;
+      
+      // Center pole
+      const poleX = size / 2;
+      const poleTop = size * 0.2;
+      const poleBottom = size * 0.85;
+      const poleWidth = size * 0.08;
+      
+      ctx.fillRect(poleX - poleWidth / 2, poleTop, poleWidth, poleBottom - poleTop);
+      
+      // Base
+      const baseWidth = size * 0.4;
+      const baseHeight = size * 0.06;
+      ctx.fillRect(poleX - baseWidth / 2, poleBottom, baseWidth, baseHeight);
+      
+      // Horizontal beam
+      const beamY = size * 0.35;
+      const beamWidth = size * 0.7;
+      const beamHeight = size * 0.05;
+      ctx.fillRect(poleX - beamWidth / 2, beamY, beamWidth, beamHeight);
+      
+      // Left scale plate
+      const leftPlateX = poleX - beamWidth / 2 + size * 0.08;
+      const plateY = beamY + beamHeight;
+      const plateWidth = size * 0.2;
+      const plateHeight = size * 0.04;
+      const ropeHeight = size * 0.1;
+      
+      // Left rope
+      ctx.beginPath();
+      ctx.moveTo(leftPlateX, beamY + beamHeight);
+      ctx.lineTo(leftPlateX, plateY + ropeHeight);
+      ctx.stroke();
+      
+      // Left plate
+      ctx.fillRect(leftPlateX - plateWidth / 2, plateY + ropeHeight, plateWidth, plateHeight);
+      
+      // Right scale plate
+      const rightPlateX = poleX + beamWidth / 2 - size * 0.08;
+      
+      // Right rope
+      ctx.beginPath();
+      ctx.moveTo(rightPlateX, beamY + beamHeight);
+      ctx.lineTo(rightPlateX, plateY + ropeHeight);
+      ctx.stroke();
+      
+      // Right plate
+      ctx.fillRect(rightPlateX - plateWidth / 2, plateY + ropeHeight, plateWidth, plateHeight);
+      
+      // Add subtle glow effect for larger icons
+      if (size >= 48) {
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+        ctx.shadowBlur = size / 16;
+        
+        // Redraw center to add glow
+        ctx.fillRect(poleX - poleWidth / 2, poleTop, poleWidth, poleBottom - poleTop);
+      }
+    }
+    
+    function downloadIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId);
+      const link = document.createElement('a');
+      link.download = `icon${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    // Draw all icons on load
+    window.onload = function() {
+      drawIcon('icon16', 16);
+      drawIcon('icon32', 32);
+      drawIcon('icon48', 48);
+      drawIcon('icon128', 128);
+    };
+  </script>
+</body>
+</html>
