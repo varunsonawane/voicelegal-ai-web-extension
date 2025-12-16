@@ -16,13 +16,19 @@ origins = [
     "http://localhost:5173",
     "http://localhost:3000",
     "http://localhost:4173",
-    "https://*.vercel.app",
+    "http://localhost:8000",
     "chrome-extension://*",
 ]
+
+# Add production URLs dynamically
+import re
+origins.append(re.compile(r"https://.*\.vercel\.app"))
+origins.append(re.compile(r"https://.*\.onrender\.com"))
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*\.(vercel\.app|onrender\.com)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

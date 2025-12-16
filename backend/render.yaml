@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: voicelegal-api
+    runtime: python
+    buildCommand: pip install -r REQUIREMENTS.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GOOGLE_CLOUD_PROJECT
+        sync: false
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        sync: false
+      - key: GCS_BUCKET_NAME
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.9
