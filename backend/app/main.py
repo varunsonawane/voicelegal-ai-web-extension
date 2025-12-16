@@ -7,7 +7,46 @@ import uuid
 import time
 import os
 from typing import Optional
+import base64
+import json
+import tempfile
 
+
+# Setup Google Cloud credentials from environment variable
+def setup_google_credentials():
+    """Setup Google Cloud credentials from base64 environment variable"""
+    credentials_base64 = os.getenv("GOOGLE_CREDENTIALS_BASE64")
+    
+    if credentials_base64:
+        try:
+            # Decode base64 credentials
+            credentials_json = base64.b64decode(credentials_base64).decode('utf-8')
+            
+            # Create a temporary file to store credentials
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as temp_file:
+                temp_file.write(credentials_json)
+                temp_path = temp_file.name
+            
+            # Set the environment variable to point to the temp file
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_path
+            print(f"✅ Google Cloud credentials loaded from environment variable")
+            return temp_path
+            
+        except Exception as e:
+            print(f"⚠️ Failed to setup Google credentials: {e}")
+            return None
+    else:
+        # Try to use existing key.json file
+        if os.path.exists('./key.json'):
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './key.json'
+            print(f"✅ Using local key.json file")
+            return './key.json'
+        else:
+            print(f"⚠️ No Google Cloud credentials found")
+            return None
+
+# Initialize credentials on startup
+setup_google_credentials()
 
 app = FastAPI(title="VoiceLegal AI API")
 
