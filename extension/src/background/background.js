@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8000';
+// TODO: Update for production deployment
+const API_URL = 'http://localhost:8000'; // Change to: https://voicelegal-api.onrender.com
 
 console.log('VoiceLegal background script loaded');
 

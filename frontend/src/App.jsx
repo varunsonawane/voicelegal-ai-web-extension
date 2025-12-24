@@ -21,7 +21,8 @@ function App() {
       if (analysisId) {
         console.log('Fetching analysis from backend...');
         
-        const response = await fetch(`http://localhost:8000/api/get-temp-analysis/${analysisId}`);
+        const apiUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/get-temp-analysis/${analysisId}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch analysis');

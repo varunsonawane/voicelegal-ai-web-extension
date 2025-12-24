@@ -1,7 +1,11 @@
-// Configuration - Update these URLs
-const API_URL = 'http://localhost:8000';
-const DASHBOARD_URL = 'http://localhost:5173';
-const ELEVENLABS_AGENT_ID = 'agent_2401kcash9gqejx8t67n3prbe2nv'; // Your ElevenLabs Agent ID
+// Configuration - imported from config.js (update config.js for production)
+const API_URL = 'http://localhost:8000'; // TODO: Update in config.js for production
+const DASHBOARD_URL = 'http://localhost:5173'; // TODO: Update in config.js for production
+const ELEVENLABS_AGENT_ID = 'agent_2401kcash9gqejx8t67n3prbe2nv'; // TODO: Update in config.js for production
+
+// For production: Change URLs in config.js to:
+// API_URL: 'https://voicelegal-api.onrender.com'
+// DASHBOARD_URL: 'https://voicelegal.vercel.app'
 
 // Detect if page is Terms & Conditions or Privacy Policy
 function detectLegalPage() {
