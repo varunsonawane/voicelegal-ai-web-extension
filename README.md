@@ -294,8 +294,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-**Varun Neeha Agrawal**  
-- Email: neagra@iu.edu vsonawanane@iu.edu
+**Varun Sonawane ** 
+- Email: vsonawa23@gmail.com
+- LinkedIn: [Varun Sonawane](https://www.linkedin.com/in/varun-sonawane/)
+**Neeha Agrawal**  
+- Email: neagra@iu.edu 
 - LinkedIn: [Neeha Agrawal](https://www.linkedin.com/in/neeha-agrawal/)
 
 ## ⚠️ Disclaimer
