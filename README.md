@@ -372,7 +372,7 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Google Cloud** - Vertex AI & Gemini 2.0 Flash
+- **Google Cloud** - Vertex AI & Gemini 2.5 Flash
 - **ElevenLabs** - Conversational AI technology
 - **AI Partner Catalyst Hackathon** - Opportunity to build
 - **Open Source Community** - FastAPI, React, Vite
