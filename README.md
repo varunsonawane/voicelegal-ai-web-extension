@@ -4,8 +4,6 @@
 
 VoiceLegal AI is an intelligent legal document assistant that analyzes complex legal documents and provides insights through natural voice conversation. Built for the AI Partner Catalyst Hackathon 2025.
 
-![VoiceLegal AI Banner](https://via.placeholder.com/1200x400/2563eb/ffffff?text=VoiceLegal+AI)
-
 ## 🌟 Features
 
 - 📄 **Smart Document Upload** - Drag-and-drop PDF documents for instant analysis
