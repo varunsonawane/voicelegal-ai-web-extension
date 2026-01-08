@@ -12,6 +12,12 @@ Stop blindly accepting Terms & Conditions. VoiceLegal AI analyzes legal document
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
+# 📽️ Demo Video
+
+https://github.com/user-attachments/assets/bda06e67-e0f3-458a-8a09-5d5e0d2dd785
+
+
+---
 
 ## 🌟 Features
 
